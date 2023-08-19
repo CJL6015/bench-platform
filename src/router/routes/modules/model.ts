@@ -24,7 +24,7 @@ const model: AppRouteModule = {
       },
     },
     {
-      path: 'train',
+      path: 'train/:id',
       name: 'train',
       component: () => import('/@/views/model/train/index.vue'),
       meta: {

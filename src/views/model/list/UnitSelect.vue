@@ -1,6 +1,6 @@
 <template>
   <a-form layout="inline" :model="formData" :label-col="labelCol" @finish="submitForm">
-    <a-col :md="6">
+    <a-col :md="5">
       <a-form-item label="机组" name="unit">
         <a-select
           v-model:value="formData.unit"
@@ -10,7 +10,7 @@
         />
       </a-form-item>
     </a-col>
-    <a-col :md="6">
+    <a-col :md="5">
       <a-form-item label="系统" name="type">
         <a-select
           v-model:value="formData.type"
@@ -20,7 +20,7 @@
         />
       </a-form-item>
     </a-col>
-    <a-col :md="6">
+    <a-col :md="5">
       <a-form-item label="子系统" name="system">
         <a-select
           v-model:value="formData.system"
@@ -29,7 +29,12 @@
         />
       </a-form-item>
     </a-col>
-    <a-col :md="6">
+    <a-col :md="5">
+      <a-form-item name="name">
+        <a-input v-model:value="formData.name" style="width: 100%" />
+      </a-form-item>
+    </a-col>
+    <a-col :md="3">
       <a-form-item>
         <a-button type="primary" html-type="submit">查询</a-button>
       </a-form-item>
@@ -44,7 +49,6 @@
   import { systemSelectParams } from '/@/api/benchmark/model/optionsModel';
 
   const optionList = await optionListApi();
-  console.log(optionList);
   export default {
     components: {
       AFormItem: Form.Item,
@@ -54,7 +58,8 @@
       ACol: Col,
       ADivider: Divider,
     },
-    setup() {
+    emits: ['optionSelected'],
+    setup(props, context) {
       let unitData = ref(optionList.units);
       let typeData = ref(optionList.types);
       let systemData = ref(optionList.systems);
@@ -63,13 +68,13 @@
         unit: unitData.value[0].id,
         type: typeData.value[0].id,
         system: systemData.value[0].id,
+        name: null,
       });
 
       //点击查询按钮提交表单触发事件
       const submitForm = (values) => {
-        console.log('Success:', values);
+        context.emit('optionSelected', values);
       };
-
       const onFinishFailed = (errorInfo: any) => {
         console.log('Failed:', errorInfo);
       };
