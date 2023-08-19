@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <div align="center"> <a href="https://github.com/anncwb/vue-vben-admin"> <img alt="VbenAdmin Logo" width="200" height="200" src="https://anncwb.github.io/anncwb/images/logo.png"> </a> <br> <br>
 
 [![license](https://img.shields.io/github/license/anncwb/vue-vben-admin.svg)](LICENSE)
@@ -187,3 +188,7 @@ If you think this project is helpful to you, you can help the author buy a cup o
 # bench-platform
 动态对标平台
 >>>>>>> 2b68e113 (Initial commit)
+=======
+# bench-platform
+动态对标平台
+>>>>>>> 2b68e113f70f7effa002b534591d38b479e73dd2
