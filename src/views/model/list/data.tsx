@@ -1,0 +1,133 @@
+export interface GrowCardItem {
+  icon: string;
+  title: string;
+  value: number;
+  total: number;
+  color: string;
+  action: string;
+  creator: string;
+  description: string;
+}
+
+export const growCardList: GrowCardItem[] = [
+  {
+    title: '模型1',
+    icon: 'total-sales|svg',
+    value: 2000,
+    total: 120000,
+    color: 'green',
+    action: '未下装',
+    creator: 'admin',
+    description: '送风机电流模型',
+  },
+  {
+    title: '模型2',
+    icon: 'total-sales|svg',
+    value: 20000,
+    total: 500000,
+    color: 'blue',
+    action: '未下装',
+    creator: 'admin',
+    description: '磨煤机电流模型',
+  },
+  {
+    title: '模型3',
+    icon: 'total-sales|svg',
+    value: 8000,
+    total: 120000,
+    color: 'orange',
+    action: '未下装',
+    creator: 'admin',
+    description: '汽轮机电流模型',
+  },
+  {
+    title: '模型4',
+    icon: 'total-sales|svg',
+    value: 5000,
+    total: 50000,
+    color: 'purple',
+    action: '已下装',
+    creator: 'admin',
+    description: '风机电流模型',
+  },
+  {
+    title: '模型1',
+    icon: 'total-sales|svg',
+    value: 2000,
+    total: 120000,
+    color: 'green',
+    action: '未下装',
+    creator: 'admin',
+    description: '送风机电流模型',
+  },
+  {
+    title: '模型2',
+    icon: 'total-sales|svg',
+    value: 20000,
+    total: 500000,
+    color: 'blue',
+    action: '未下装',
+    creator: 'admin',
+    description: '磨煤机电流模型',
+  },
+  {
+    title: '模型3',
+    icon: 'total-sales|svg',
+    value: 8000,
+    total: 120000,
+    color: 'orange',
+    action: '未下装',
+    creator: 'admin',
+    description: '汽轮机电流模型',
+  },
+  {
+    title: '模型4',
+    icon: 'total-sales|svg',
+    value: 5000,
+    total: 50000,
+    color: 'purple',
+    action: '已下装',
+    creator: 'admin',
+    description: '风机电流模型',
+  },
+  {
+    title: '模型1',
+    icon: 'total-sales|svg',
+    value: 2000,
+    total: 120000,
+    color: 'green',
+    action: '未下装',
+    creator: 'admin',
+    description: '送风机电流模型',
+  },
+  {
+    title: '模型2',
+    icon: 'total-sales|svg',
+    value: 20000,
+    total: 500000,
+    color: 'blue',
+    action: '未下装',
+    creator: 'admin',
+    description: '磨煤机电流模型',
+  },
+  {
+    title: '模型3',
+    icon: 'total-sales|svg',
+    value: 8000,
+    total: 120000,
+    color: 'orange',
+    action: '未下装',
+    creator: 'admin',
+    description: '汽轮机电流模型',
+  },
+  {
+    title: '模型4',
+    icon: 'total-sales|svg',
+    value: 5000,
+    total: 50000,
+    color: 'purple',
+    action: '已下装',
+    creator: 'admin',
+    description: '风机电流模型',
+  },
+];
