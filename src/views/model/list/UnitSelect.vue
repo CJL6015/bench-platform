@@ -43,12 +43,11 @@
   <a-divider />
 </template>
 <script lang="ts">
-  import { ref } from 'vue';
+  import { ref, onMounted } from 'vue';
   import { Form, Select, Button, Col, Divider } from 'ant-design-vue';
   import { optionListApi, subSystemListApi } from '/@/api/benchmark/select';
-  import { systemSelectParams } from '/@/api/benchmark/model/optionsModel';
+  import { systemSelectParams, OptionsItem } from '/@/api/benchmark/model/optionsModel';
 
-  const optionList = await optionListApi();
   export default {
     components: {
       AFormItem: Form.Item,
@@ -60,17 +59,40 @@
     },
     emits: ['optionSelected'],
     setup(props, context) {
-      let unitData = ref(optionList.units);
-      let typeData = ref(optionList.types);
-      let systemData = ref(optionList.systems);
-
+      let unitData = ref<OptionsItem[]>([]);
+      let typeData = ref<OptionsItem[]>([]);
+      let systemData = ref<OptionsItem[]>([]);
       const formData = ref({
-        unit: unitData.value[0].id,
-        type: typeData.value[0].id,
-        system: systemData.value[0].id,
+        unit: -1,
+        type: -1,
+        system: -1,
         name: null,
       });
+      onMounted(async () => {
+        const optionList = await optionListApi();
+        unitData.value = optionList.units;
+        typeData.value = optionList.types;
+        systemData.value = optionList.systems;
+        formData.value = {
+          unit: unitData.value[0].id,
+          type: typeData.value[0].id,
+          system: systemData.value[0].id,
+          name: null,
+        };
 
+        if (unitData.value.length > 0) {
+          formData.value.unit = unitData.value[0].id;
+        }
+        if (typeData.value.length > 0) {
+          formData.value.type = typeData.value[0].id;
+        }
+        if (systemData.value.length > 0) {
+          formData.value.system = systemData.value[0].id;
+        }
+      });
+
+      //第一次加载时传递参数
+      context.emit('optionSelected', formData.value);
       //点击查询按钮提交表单触发事件
       const submitForm = (values) => {
         context.emit('optionSelected', values);

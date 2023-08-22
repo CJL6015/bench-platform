@@ -21,8 +21,8 @@ export interface selectParams {
 }
 
 export interface systemSelectParams {
-  unitId: number;
-  typeId: number;
+  unitId: number | null;
+  typeId: number | null;
 }
 
 /**

@@ -30,7 +30,7 @@ const model: AppRouteModule = {
       meta: {
         // affix: true,
         title: t('routes.model.train'),
-        showInMenu: false,
+        hideMenu: true,
       },
     },
     {

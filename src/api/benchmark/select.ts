@@ -11,6 +11,7 @@ enum Api {
   LIST = '/select/list',
   UNIT_LIST = '/select/unit/options',
   SYSTEM_LIST = '/select/system/options',
+  POINT_LIST = '/select/point/options',
 }
 
 export const optionListApi = () => defHttp.get<AllOptionsItem>({ url: Api.LIST });
@@ -32,3 +33,6 @@ export const systemListApi = (params?: selectParams) =>
  */
 export const subSystemListApi = (params?: systemSelectParams) =>
   defHttp.get<OptionsItem[]>({ url: Api.SYSTEM_LIST, params });
+
+export const pointListApi = (params?: string) =>
+  defHttp.get<OptionsItem[]>({ url: Api.POINT_LIST, params });

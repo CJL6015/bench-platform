@@ -7,6 +7,26 @@ export interface ModelCardItem {
   creatTime: string;
 }
 
+interface MovingWindows {
+  windowLength: number;
+  samplingInterval: number;
+  movingSpeed: number;
+}
+
+export interface ModelInfo {
+  id: number;
+  btmState: string;
+  unitID: string;
+  createName: string;
+  createTime: string;
+  modelName: string;
+  movingWindows: MovingWindows;
+  steadyPoint: any[];
+  targetParameter: any;
+  relationParameter: any[];
+  boundaryParameter: any[];
+}
+
 export interface ModelQueryParams {
   unitId: number;
   typeId: number;

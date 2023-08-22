@@ -2,7 +2,7 @@
   <PageWrapper title="模型中心" contentFullHeight>
     <a-card>
       <UnitSelect @option-selected="handleOptionSelected" />
-      <ModelCard :loading="loading" :selectData="selectData" class="enter-y" />
+      <ModelCard :loading="loading" :systemId="systemId" :selectData="selectData" class="enter-y" />
     </a-card>
   </PageWrapper>
 </template>
@@ -15,10 +15,11 @@
 
   const loading = ref(true);
   const selectData = ref(null);
+  const systemId = ref(null);
 
   const handleOptionSelected = (values) => {
-    console.log(values);
     selectData.value = values;
+    systemId.value = values['system'];
   };
 
   setTimeout(() => {
@@ -37,6 +38,7 @@
         loading,
         handleOptionSelected,
         selectData,
+        systemId,
       };
     },
   });

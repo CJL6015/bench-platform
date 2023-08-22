@@ -1,5 +1,5 @@
 <template>
-  <PageWrapper title="动态对标：4号机组" contentBackground>
+  <PageWrapper :title="'对标模型: ' + model?.modelName" contentBackground>
     <template #extra>
       <a-button> 回算 </a-button>
       <a-button> 下装 </a-button>
@@ -13,42 +13,49 @@
       </a-tabs>
     </template>
 
-    <div class="pt-4 m-4 desc-wrap">
-      <a-descriptions size="small" :column="2">
-        <a-descriptions-item label="模型名称"> 汽轮机电流模型 </a-descriptions-item>
-        <a-descriptions-item label="描述"> 汽轮机电流模型，监测电流 </a-descriptions-item>
-        <a-descriptions-item label="创建时间"> 2023-07-10 10:12:12</a-descriptions-item>
-        <a-descriptions-item label="最近修改时间"> 2023-07-31 10:12:12 </a-descriptions-item>
-        <a-descriptions-item label="备注"> 请于两个工作日内确认 </a-descriptions-item>
-      </a-descriptions>
+    <div>
+      <a-card title="模型信息" :bordered="false">
+        <a-descriptions size="small" :column="2" bordered>
+          <a-descriptions-item label="模型名称"> {{ model?.modelName }} </a-descriptions-item>
+          <a-descriptions-item label="创建人"> {{ model?.createName }}</a-descriptions-item>
+          <a-descriptions-item label="创建时间"> {{ model?.createTime }} </a-descriptions-item>
+          <a-descriptions-item label="备注"> 暂无 </a-descriptions-item>
+        </a-descriptions>
+      </a-card>
+
       <a-card title="建模进度" :bordered="false">
         <a-steps :current="1" progress-dot size="small">
           <a-step title="测点选择">
             <template #description>
-              <div>王东南</div>
-              <p>2023-7-12 12:32</p>
+              <div> {{ model?.createName }}</div>
+              <p> {{ model?.createTime }}</p>
             </template>
           </a-step>
-          <a-step title="边界调整">
+          <a-step title="模型训练">
             <template #description>
-              <p>Chad</p>
+              <p>{{ model?.createTime }}</p>
             </template>
           </a-step>
-          <a-step title="回算模型" />
           <a-step title="模型下装" />
+          <a-step title="回算模型" />
         </a-steps>
       </a-card>
-      <BasicTable @register="registerTimeTable" />
+      <a-divider />
+      <BasicTable @register="targetTable" />
+      <BasicTable @register="boundaryTable" />
+      <BasicTable @register="relationTable" />
     </div>
   </PageWrapper>
 </template>
 <script lang="ts">
-  import { defineComponent } from 'vue';
+  import { defineComponent, ref, onMounted, computed } from 'vue';
   import { useRoute } from 'vue-router';
   import { BasicTable, useTable } from '/@/components/Table';
   import { PageWrapper } from '/@/components/Page';
   import { Divider, Card, Descriptions, Steps, Tabs } from 'ant-design-vue';
-  import { refundTimeTableSchema, refundTimeTableData } from './data';
+  import { targetTableSchema, relationTableSchema, boundaryTableSchema } from './data';
+  import { modelInfoApi } from '/@/api/benchmark/models';
+  import { ModelInfo } from '/@/api/benchmark/model/models';
 
   export default defineComponent({
     components: {
@@ -66,18 +73,56 @@
     setup() {
       const route = useRoute();
       const id = route.params.id;
-      console.log(id);
-      const [registerTimeTable] = useTable({
+      const fetchModelInfo = async () => {
+        const modelInfo = await modelInfoApi(id);
+        console.log(modelInfo);
+        return modelInfo;
+      };
+      const model = ref<ModelInfo | null>(null);
+      onMounted(async () => {
+        const info = await fetchModelInfo();
+        model.value = info;
+      });
+      const targetTableData = computed(() => {
+        return [model.value?.targetParameter || {}];
+      });
+
+      const relationTableData = computed(() => {
+        return model.value?.relationParameter || [];
+      });
+
+      const boundaryTableData = computed(() => {
+        return model.value?.boundaryParameter || [];
+      });
+
+      const [relationTable] = useTable({
         title: '相关参数',
-        columns: refundTimeTableSchema,
+        columns: relationTableSchema,
         pagination: false,
-        dataSource: refundTimeTableData,
-        showIndexColumn: false,
+        dataSource: relationTableData,
+        scroll: { y: 300 },
+      });
+      const [targetTable] = useTable({
+        title: '目标参数',
+        columns: targetTableSchema,
+        pagination: false,
+        dataSource: targetTableData,
+        scroll: { y: 300 },
+      });
+
+      const [boundaryTable] = useTable({
+        title: '边界参数',
+        columns: boundaryTableSchema,
+        pagination: false,
+        dataSource: boundaryTableData,
         scroll: { y: 300 },
       });
 
       return {
-        registerTimeTable,
+        targetTable,
+        relationTable,
+        boundaryTable,
+        model,
       };
     },
   });

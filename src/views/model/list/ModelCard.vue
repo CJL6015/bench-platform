@@ -13,35 +13,41 @@
         <template #extra>
           <Icon :icon="item.icon" :size="30" color="white" />
         </template>
-
-        <div class="py-4 px-4 flex justify-between items-center">
-          <span class="text-2xl">{{ item.description }}</span>
-        </div>
-
-        <div class="p-2 px-4 flex justify-between">
-          <span>测点个数</span>
-          <CountTo :startVal="1" :endVal="item.total" />
+        <div class="p-2 px-5 grid md:grid-cols-3">
+          <span>创建人: {{ item.creator }}</span
+          ><span>创建时间: {{ item.creator }}</span
+          ><span>模型状态: {{ item.status }}</span>
         </div>
       </Card>
     </template>
+    <Card size="small" class="icon-card" @click="openDrawer(true)" :hoverable="true"
+      ><Icon icon="ic:sharp-add" :size="80" color="#a7a9a7"
+    /></Card>
   </div>
+  <CreateModel @register="registerDraw" :systemId="systemId" />
 </template>
 <script lang="ts" setup>
-  import { CountTo } from '/@/components/CountTo/index';
   import Icon from '@/components/Icon/Icon.vue';
   import { Card } from 'ant-design-vue';
   import { ModelItem } from './data';
   import { modelCardListApi } from '/@/api/benchmark/models';
   import { ModelQueryParams } from '/@/api/benchmark/model/models';
-  import { watch, ref } from 'vue';
+  import { watch, ref, PropType } from 'vue';
   import { useGo } from '/@/hooks/web/usePage';
+  import CreateModel from './CreateModel.vue';
+  import { useDrawer } from '/@/components/Drawer';
+
+  const [registerDraw, { openDrawer }] = useDrawer();
 
   const props = defineProps({
     loading: {
       type: Boolean,
     },
     selectData: {
-      type: Object,
+      type: Object as PropType<Record<string, any> | null | undefined>,
+    },
+    systemId: {
+      type: Number,
     },
   });
 
@@ -59,7 +65,6 @@
   watch(
     () => props.selectData,
     async (value) => {
-      console.log(value);
       const queryParams: ModelQueryParams = {
         unitId: value?.unit,
         typeId: value?.type,
@@ -69,8 +74,7 @@
       const modelList = await modelCardListApi(queryParams);
       const cardList: ModelItem[] = [];
       for (const modelCard of modelList) {
-        console.log(modelCard);
-        modelCard.status = 0;
+        // modelCard.status = 0;
         const card: ModelItem = {
           id: modelCard.id,
           title: modelCard.name,
@@ -80,9 +84,10 @@
           color: colors[modelCard.status],
           status: statusStr[modelCard.status],
           creator: modelCard.creatName,
-          description: modelCard.creatTime,
+          description: modelCard.name,
           headStyle: {
             backgroundColor: colors[modelCard.status],
+            fontSize: '20px',
           },
           bodyStyle: {
             borderColor: colors[modelCard.status],
@@ -95,3 +100,12 @@
     },
   );
 </script>
+
+<style>
+  .icon-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f2f2f2;
+  }
+</style>

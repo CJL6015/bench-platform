@@ -1,51 +1,108 @@
 import { BasicColumn } from '/@/components/Table/src/types/table';
 
-import { Badge } from 'ant-design-vue';
-
-export const refundTimeTableSchema: BasicColumn[] = [
+export const targetTableSchema: BasicColumn[] = [
   {
     title: '描述',
     width: 150,
-    dataIndex: 't1',
+    dataIndex: 'description',
+    edit: true,
   },
   {
     title: '点号',
     width: 150,
-    dataIndex: 't2',
+    dataIndex: 'targetPoint',
   },
   {
     title: '单位',
     width: 150,
-    dataIndex: 't3',
-    customRender: ({ record }) => {
-      return <Badge status="success" text={record.t3} />;
-    },
+    dataIndex: 'unit',
+    edit: true,
   },
   {
     title: '上限	',
     width: 150,
-    dataIndex: 't4',
+    dataIndex: 'upperlimit',
+    edit: true,
   },
   {
     title: '下限',
     width: 150,
-    dataIndex: 't5',
+    dataIndex: 'lowerlimit',
+    edit: true,
+  },
+  {
+    title: '时实值',
+    width: 150,
+    dataIndex: 'realTimeValue',
   },
 ];
 
-export const refundTimeTableData: any[] = [
+export const boundaryTableSchema: BasicColumn[] = [
   {
-    t1: '送风机B出口压力',
-    t2: 'U2_AI_22HLB10CP101',
-    t3: 'kPa',
-    t4: '3200',
-    t5: '800',
+    title: '描述',
+    width: 150,
+    dataIndex: 'description',
+    edit: true,
   },
   {
-    t1: 'B送风机风量',
-    t2: 'U2_AI_22HLA10CF901',
-    t3: 't/h',
-    t4: '140',
-    t5: '60',
+    title: '点号',
+    width: 150,
+    dataIndex: 'targetPoint',
+  },
+  {
+    title: '单位',
+    width: 150,
+    dataIndex: 'unit',
+    edit: true,
+  },
+  {
+    title: '上限	',
+    width: 150,
+    dataIndex: 'upperlimit',
+    edit: true,
+  },
+  {
+    title: '下限',
+    width: 150,
+    dataIndex: 'lowerlimit',
+    edit: true,
+  },
+  {
+    title: '网格数',
+    width: 150,
+    dataIndex: 'gridNumber',
+    edit: true,
+  },
+];
+
+export const relationTableSchema: BasicColumn[] = [
+  {
+    title: '描述',
+    width: 150,
+    dataIndex: 'description',
+    edit: true,
+  },
+  {
+    title: '点号',
+    width: 150,
+    dataIndex: 'targetPoint',
+  },
+  {
+    title: '单位',
+    width: 150,
+    dataIndex: 'unit',
+    edit: true,
+  },
+  {
+    title: '上限	',
+    width: 150,
+    dataIndex: 'upperlimit',
+    edit: true,
+  },
+  {
+    title: '下限',
+    width: 150,
+    dataIndex: 'lowerlimit',
+    edit: true,
   },
 ];
