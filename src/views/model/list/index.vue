@@ -1,5 +1,5 @@
 <template>
-  <PageWrapper title="模型中心" contentFullHeight>
+  <PageWrapper contentFullHeight>
     <a-card>
       <UnitSelect @option-selected="handleOptionSelected" />
       <ModelCard :loading="loading" :systemId="systemId" :selectData="selectData" class="enter-y" />
