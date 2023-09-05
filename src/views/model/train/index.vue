@@ -8,7 +8,7 @@
         <a-tab-pane key="4" tab="模型评估" />
       </a-tabs>
     </template>
-    <div v-if="activeKey === '1'">
+    <div v-show="activeKey === '1'">
       <a-card title="模型信息" :bordered="false">
         <template #extra>
           <a-button> 下装 </a-button>
@@ -44,17 +44,29 @@
       <a-card title="相关参数" :bordered="false"><BasicTable @register="boundaryTable" /></a-card>
       <a-card title="边界参数" :bordered="false"><BasicTable @register="relationTable" /></a-card>
     </div>
-    <div v-if="activeKey === '2'">
+    <div v-show="activeKey === '2'">
       <a-card title="模型数据">
         <template #extra>
           <a-button> 回算 </a-button>
         </template>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div
+            ref="chartRef1"
+            class="border border-gray-400"
+            style="width: 100%; height: 500px"
+          ></div>
+          <div
+            ref="chartRef2"
+            class="border border-gray-400"
+            style="width: 100%; height: 500px"
+          ></div>
+        </div>
       </a-card>
     </div>
   </PageWrapper>
 </template>
 <script lang="ts">
-  import { defineComponent, ref, onMounted, computed } from 'vue';
+  import { defineComponent, ref, Ref, onMounted, computed, watch, nextTick } from 'vue';
   import { useRoute } from 'vue-router';
   import { BasicTable, useTable } from '/@/components/Table';
   import { PageWrapper } from '/@/components/Page';
@@ -62,6 +74,7 @@
   import { targetTableSchema, relationTableSchema, boundaryTableSchema } from './data';
   import { modelInfoApi } from '/@/api/benchmark/models';
   import { ModelInfo } from '/@/api/benchmark/model/models';
+  import { useECharts } from '/@/hooks/web/useECharts';
 
   export default defineComponent({
     components: {
@@ -123,12 +136,86 @@
 
       const activeKey = ref('1');
 
+      const chartRef1 = ref<HTMLDivElement | null>(null);
+      const chartRef2 = ref<HTMLDivElement | null>(null);
+      const { setOptions: setOptions1, resize: resize1 } = useECharts(
+        chartRef1 as Ref<HTMLDivElement>,
+      );
+      const { setOptions: setOptions2, resize: resize2 } = useECharts(
+        chartRef2 as Ref<HTMLDivElement>,
+      );
+      watch(activeKey, (newValue, _) => {
+        if (newValue === '2') {
+          console.log(activeKey);
+          nextTick(() => {
+            resize1();
+            resize2();
+          });
+        }
+      });
+
+      onMounted(() => {
+        setOptions1({
+          xAxis: {
+            type: 'category',
+            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          },
+          yAxis: {
+            type: 'value',
+          },
+          series: [
+            {
+              data: [120, 200, 150, 80, 70, 110, 130],
+              type: 'bar',
+            },
+          ],
+        });
+      });
+      onMounted(() => {
+        setOptions2({
+          xAxis: {},
+          yAxis: {},
+          series: [
+            {
+              symbolSize: 20,
+              data: [
+                [10.0, 8.04],
+                [8.07, 6.95],
+                [13.0, 7.58],
+                [9.05, 8.81],
+                [11.0, 8.33],
+                [14.0, 7.66],
+                [13.4, 6.81],
+                [10.0, 6.33],
+                [14.0, 8.96],
+                [12.5, 6.82],
+                [9.15, 7.2],
+                [11.5, 7.2],
+                [3.03, 4.23],
+                [12.2, 7.83],
+                [2.02, 4.47],
+                [1.05, 3.33],
+                [4.05, 4.96],
+                [6.03, 7.24],
+                [12.0, 6.26],
+                [12.0, 8.84],
+                [7.08, 5.82],
+                [5.02, 5.68],
+              ],
+              type: 'scatter',
+            },
+          ],
+        });
+      });
+
       return {
         targetTable,
         relationTable,
         boundaryTable,
         model,
         activeKey,
+        chartRef1,
+        chartRef2,
       };
     },
   });
