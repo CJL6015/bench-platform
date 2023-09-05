@@ -72,7 +72,7 @@
   import { PageWrapper } from '/@/components/Page';
   import { Divider, Card, Descriptions, Steps, Tabs } from 'ant-design-vue';
   import { targetTableSchema, relationTableSchema, boundaryTableSchema } from './data';
-  import { modelInfoApi } from '/@/api/benchmark/models';
+  import { modelInfoApi, modelDataApi } from '/@/api/benchmark/models';
   import { ModelInfo } from '/@/api/benchmark/model/models';
   import { useECharts } from '/@/hooks/web/useECharts';
 
@@ -153,55 +153,47 @@
           });
         }
       });
+      const fetchModelData = async () => {
+        const dataParams = {
+          type: 'avg',
+          index: '0,1',
+        };
+        const modelData = await modelDataApi(1, dataParams);
+        return modelData;
+      };
 
-      onMounted(() => {
+      onMounted(async () => {
+        const modelData = await fetchModelData();
+        console.log(modelData);
+        let scatterData: Array<[number, number]> = [];
+        const targetValue: number[] = modelData.targetValue;
+        const b1: number[] = modelData.dataList[0];
+        for (let i in targetValue) {
+          scatterData.push([targetValue[i], b1[i]]);
+        }
+        console.log(scatterData);
         setOptions1({
           xAxis: {
             type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            data: modelData['targetValue'],
           },
           yAxis: {
             type: 'value',
           },
           series: [
             {
-              data: [120, 200, 150, 80, 70, 110, 130],
+              data: modelData['sampleValue'],
               type: 'bar',
             },
           ],
         });
-      });
-      onMounted(() => {
         setOptions2({
           xAxis: {},
           yAxis: {},
           series: [
             {
               symbolSize: 20,
-              data: [
-                [10.0, 8.04],
-                [8.07, 6.95],
-                [13.0, 7.58],
-                [9.05, 8.81],
-                [11.0, 8.33],
-                [14.0, 7.66],
-                [13.4, 6.81],
-                [10.0, 6.33],
-                [14.0, 8.96],
-                [12.5, 6.82],
-                [9.15, 7.2],
-                [11.5, 7.2],
-                [3.03, 4.23],
-                [12.2, 7.83],
-                [2.02, 4.47],
-                [1.05, 3.33],
-                [4.05, 4.96],
-                [6.03, 7.24],
-                [12.0, 6.26],
-                [12.0, 8.84],
-                [7.08, 5.82],
-                [5.02, 5.68],
-              ],
+              data: scatterData,
               type: 'scatter',
             },
           ],
