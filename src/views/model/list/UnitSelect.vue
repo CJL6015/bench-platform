@@ -95,6 +95,7 @@
       context.emit('optionSelected', formData.value);
       //点击查询按钮提交表单触发事件
       const submitForm = (values) => {
+        console.log(values);
         context.emit('optionSelected', values);
       };
       const onFinishFailed = (errorInfo: any) => {
