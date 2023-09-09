@@ -217,20 +217,6 @@
         return modelData;
       };
       const fetchHeatOption = (modelData) => {
-        let data: Array<[any, any, any]> = [];
-        const sampleValue = modelData.sampleValue;
-        const value1 = [...modelData.dataList[0]];
-        const value2 = [...modelData.dataList[1]];
-        value1.sort((a, b) => a - b);
-        value2.sort((a, b) => a - b);
-        for (let i = 0; i < sampleValue.length; i++) {
-          data.push([
-            value1.indexOf(modelData.dataList[0][i]),
-            value2.indexOf(modelData.dataList[1][i]),
-            sampleValue[i],
-          ]);
-        }
-        console.log(data);
         const option = {
           title: {
             text: '热力图名字待定',
@@ -244,14 +230,14 @@
           },
           xAxis: {
             type: 'category',
-            data: value1,
+            data: Array.from({ length: 10 }, (_, index) => index + 1),
             splitArea: {
               show: true,
             },
           },
           yAxis: {
             type: 'category',
-            data: value2,
+            data: Array.from({ length: 10 }, (_, index) => index + 1),
             splitArea: {
               show: true,
             },
@@ -266,7 +252,7 @@
             {
               name: '样本个数',
               type: 'heatmap',
-              data: data,
+              data: modelData.heatData,
               emphasis: {
                 itemStyle: {
                   shadowBlur: 10,
