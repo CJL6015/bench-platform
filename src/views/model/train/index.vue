@@ -272,7 +272,7 @@
           },
           xAxis: {
             type: 'category',
-            data: modelData['targetValue'],
+            data: Array.from({ length: 10 }, (_, index) => index + 1),
           },
           yAxis: {
             type: 'value',

@@ -13,7 +13,7 @@
   import UnitSelect from './UnitSelect.vue';
   import { Card } from 'ant-design-vue';
 
-  const loading = ref(true);
+  const loading = ref<Boolean>(true);
   const selectData = ref(null);
   const systemId = ref(null);
 
