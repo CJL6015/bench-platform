@@ -47,11 +47,11 @@
     <div v-show="activeKey === '2'">
       <a-card title="模型数据">
         <template #extra>
-          <a-button> 回算 </a-button>
+          <a-button @click="calculateBack"> 回算 </a-button>
         </template>
         <div>
           <a-form layout="inline" :model="formData" :label-col="labelCol" @finish="submitForm">
-            <div style="margin-bottom: 10px" class="grid md:grid-cols-3 gap-4">
+            <div style="margin-bottom: 10px" class="grid md:grid-cols-4 gap-4">
               <a-form-item label="边界参数" name="boundary">
                 <a-select
                   placeholder="选择边界参数"
@@ -73,6 +73,13 @@
                   style="width: 400px"
                   v-model:value="formData.type"
                   :options="typeOptions"
+                />
+              </a-form-item>
+              <a-form-item label="历史时间">
+                <a-range-picker
+                  v-model:value="value"
+                  show-time
+                  :placeholder="['开始时间', '结束时间']"
                 />
               </a-form-item>
               <a-form-item>
@@ -103,11 +110,23 @@
   import { useRoute } from 'vue-router';
   import { BasicTable, useTable } from '/@/components/Table';
   import { PageWrapper } from '/@/components/Page';
-  import { Divider, Card, Descriptions, Steps, Tabs, Form, Select, Button } from 'ant-design-vue';
+  import dayjs, { Dayjs } from 'dayjs';
+  import {
+    Divider,
+    Card,
+    Descriptions,
+    Steps,
+    Tabs,
+    Form,
+    Select,
+    Button,
+    RangePicker,
+  } from 'ant-design-vue';
   import { targetTableSchema, relationTableSchema, boundaryTableSchema } from './data';
-  import { modelInfoApi, modelDataApi } from '/@/api/benchmark/models';
+  import { modelInfoApi, modelDataApi, calculateBackApi } from '/@/api/benchmark/models';
   import { ModelInfo } from '/@/api/benchmark/model/models';
   import { useECharts } from '/@/hooks/web/useECharts';
+  import { useMessage } from '/@/hooks/web/useMessage';
 
   export default defineComponent({
     components: {
@@ -125,6 +144,7 @@
       AForm: Form,
       ASelect: Select,
       AButton: Button,
+      ARangePicker: RangePicker,
     },
     setup() {
       const route = useRoute();
@@ -139,6 +159,14 @@
         const info = await fetchModelInfo();
         model.value = info;
       });
+
+      type RangeValue = [Dayjs, Dayjs];
+      const value = ref<RangeValue>();
+      const currentDate: Dayjs = dayjs();
+      const lastMonthDate: Dayjs = currentDate.subtract(1, 'month');
+      const rangeValue: RangeValue = [lastMonthDate, currentDate];
+      value.value = rangeValue;
+
       const targetTableData = computed(() => {
         return [model.value?.targetParameter || {}];
       });
@@ -320,9 +348,14 @@
 
       const submitForm = async (values) => {
         const selectBoundary = toRaw(values.boundary).join(',');
+        const [startDate, endDate] = value.value;
+        const startDateDate = startDate.toDate();
+        const endDateDate = endDate.toDate();
         const param = {
           type: values.type,
           index: selectBoundary,
+          st: dayjs(startDateDate).format('YYYY-MM-DD HH:mm:ss'),
+          et: dayjs(endDateDate).format('YYYY-MM-DD HH:mm:ss'),
         };
         const modelData = await fetchModelData(param);
         console.log(modelData);
@@ -345,6 +378,22 @@
       };
 
       const labelCol = { style: { width: '80px' } };
+      const { createMessage } = useMessage();
+      const calculateBack = async function () {
+        const [startDate, endDate] = value.value;
+        const startDateDate = startDate.toDate();
+        const endDateDate = endDate.toDate();
+        const time = {
+          st: startDateDate,
+          et: endDateDate,
+        };
+        const calculateRes = await calculateBackApi(id, time);
+        if (calculateRes) {
+          createMessage.success('回算提交成功');
+        } else {
+          createMessage.error('回算异常');
+        }
+      };
 
       return {
         targetTable,
@@ -360,6 +409,8 @@
         boundarySelectData,
         typeOptions,
         onChange,
+        calculateBack,
+        value,
       };
     },
   });
