@@ -13,6 +13,9 @@ export const modelCardListApi = (params?: ModelQueryParams) =>
 
 export const modelInfoApi = (id: any) => defHttp.get<ModelInfo>({ url: Api.MODEL_INFO + id });
 
+export const updateModelInfo = (params: any) =>
+  defHttp.patch<Boolean>({ url: Api.MODEL_INFO, params });
+
 export const modelSaveApi = (params?: any) =>
   defHttp.post<number>({ url: Api.MODEL_SAVE, data: params });
 

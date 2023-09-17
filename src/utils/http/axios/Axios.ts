@@ -188,6 +188,10 @@ export class VAxios {
     return this.request({ ...config, method: 'POST' }, options);
   }
 
+  patch<T = any>(config: AxiosRequestConfig, options?: RequestOptions): Promise<T> {
+    return this.request({ ...config, method: 'PATCH' }, options);
+  }
+
   put<T = any>(config: AxiosRequestConfig, options?: RequestOptions): Promise<T> {
     return this.request({ ...config, method: 'PUT' }, options);
   }

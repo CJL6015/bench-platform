@@ -12,7 +12,9 @@
       <a-card title="模型信息" :bordered="false">
         <template #extra>
           <a-button> 下装 </a-button>
-          <a-button type="primary" style="margin-left: 6px"> 修改模型 </a-button>
+          <a-button type="primary" style="margin-left: 6px" @click="updateModel">
+            更新模型
+          </a-button>
         </template>
         <a-descriptions size="small" :column="2" bordered>
           <a-descriptions-item label="模型名称"> {{ model?.modelName }} </a-descriptions-item>
@@ -40,9 +42,15 @@
         </a-steps>
       </a-card>
       <a-divider />
-      <a-card title="目标参数" :bordered="false"><BasicTable @register="targetTable" /></a-card>
-      <a-card title="相关参数" :bordered="false"><BasicTable @register="boundaryTable" /></a-card>
-      <a-card title="边界参数" :bordered="false"><BasicTable @register="relationTable" /></a-card>
+      <a-card title="目标参数" :bordered="false"
+        ><BasicTable @register="targetTable" @edit-end="handleTargetEdit"
+      /></a-card>
+      <a-card title="相关参数" :bordered="false"
+        ><BasicTable @register="relationTable" @edit-end="handleRelationEdit"
+      /></a-card>
+      <a-card title="边界参数" :bordered="false"
+        ><BasicTable @register="boundaryTable" @edit-end="handleBoundaryEdit"
+      /></a-card>
     </div>
     <div v-show="activeKey === '2'">
       <a-card title="模型数据">
@@ -123,7 +131,12 @@
     RangePicker,
   } from 'ant-design-vue';
   import { targetTableSchema, relationTableSchema, boundaryTableSchema } from './data';
-  import { modelInfoApi, modelDataApi, calculateBackApi } from '/@/api/benchmark/models';
+  import {
+    modelInfoApi,
+    modelDataApi,
+    calculateBackApi,
+    updateModelInfo,
+  } from '/@/api/benchmark/models';
   import { ModelInfo } from '/@/api/benchmark/model/models';
   import { useECharts } from '/@/hooks/web/useECharts';
   import { useMessage } from '/@/hooks/web/useMessage';
@@ -179,6 +192,17 @@
         return model.value?.boundaryParameter || [];
       });
 
+      const updateModel = async () => {
+        const modelInfo = toRaw(model.value);
+        console.log(modelInfo);
+        const result = await updateModelInfo(modelInfo);
+        if (result) {
+          createMessage.success('模型更新成功');
+        } else {
+          createMessage.error('模型更新异常,请重试');
+        }
+      };
+
       const boundarySelectData = computed(() => {
         let data: any[] = [];
         const boundary = boundaryTableData.value;
@@ -190,6 +214,19 @@
         }
         return data;
       });
+
+      function handleTargetEdit({ key, value }) {
+        model.value.targetParameter[key] = value;
+      }
+
+      function handleBoundaryEdit({ index, key, value }) {
+        model.value.boundaryParameter[index][key] = value;
+      }
+
+      function handleRelationEdit({ index, key, value }) {
+        model.value.relationParameter[index][key] = value;
+      }
+
       const typeOptions = [
         { value: '', label: '所有值' },
         { value: 'max', label: '最大值' },
@@ -411,6 +448,10 @@
         onChange,
         calculateBack,
         value,
+        updateModel,
+        handleTargetEdit,
+        handleBoundaryEdit,
+        handleRelationEdit,
       };
     },
   });
