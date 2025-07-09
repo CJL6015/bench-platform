@@ -7,6 +7,7 @@ export interface ModelItem {
   value: number;
   total: number;
   color: string;
+  creatTime: string;
   status: string;
   creator: string;
   description: string;

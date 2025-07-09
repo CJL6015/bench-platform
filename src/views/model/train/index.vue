@@ -12,7 +12,9 @@
       <a-card title="模型信息" :bordered="false">
         <template #extra>
           <a-button> 下装 </a-button>
-          <a-button type="primary" style="margin-left: 6px"> 修改模型 </a-button>
+          <a-button type="primary" style="margin-left: 6px" @click="updateModel">
+            更新模型
+          </a-button>
         </template>
         <a-descriptions size="small" :column="2" bordered>
           <a-descriptions-item label="模型名称"> {{ model?.modelName }} </a-descriptions-item>
@@ -40,15 +42,61 @@
         </a-steps>
       </a-card>
       <a-divider />
-      <a-card title="目标参数" :bordered="false"><BasicTable @register="targetTable" /></a-card>
-      <a-card title="相关参数" :bordered="false"><BasicTable @register="boundaryTable" /></a-card>
-      <a-card title="边界参数" :bordered="false"><BasicTable @register="relationTable" /></a-card>
+      <a-card title="目标参数" :bordered="false"
+        ><BasicTable @register="targetTable" @edit-end="handleTargetEdit"
+      /></a-card>
+      <a-card title="相关参数" :bordered="false"
+        ><BasicTable @register="relationTable" @edit-end="handleRelationEdit"
+      /></a-card>
+      <a-card title="边界参数" :bordered="false"
+        ><BasicTable @register="boundaryTable" @edit-end="handleBoundaryEdit"
+      /></a-card>
     </div>
     <div v-show="activeKey === '2'">
       <a-card title="模型数据">
         <template #extra>
-          <a-button> 回算 </a-button>
+          <a-button @click="calculateBack"> 回算 </a-button>
         </template>
+        <div>
+          <a-form layout="inline" :model="formData" :label-col="labelCol" @finish="submitForm">
+            <a-row style="margin-bottom: 10px">
+              <a-form-item label="边界参数" name="boundary">
+                <a-select
+                  placeholder="选择边界参数"
+                  style="width: 300px"
+                  v-model:value="formData.boundary"
+                  mode="tags"
+                  :maxTagCount="2"
+                  @change="onChange"
+                  :options="
+                    boundarySelectData.map((boundary) => ({
+                      value: boundary.id,
+                      label: boundary.name,
+                    }))
+                  "
+                />
+              </a-form-item>
+              <a-form-item label="数据类型" name="type">
+                <a-select
+                  style="width: 300px"
+                  v-model:value="formData.type"
+                  :options="typeOptions"
+                />
+              </a-form-item>
+              <a-form-item label="历史时间">
+                <a-range-picker
+                  v-model:value="value"
+                  show-time
+                  :placeholder="['开始时间', '结束时间']"
+                />
+              </a-form-item>
+              <a-form-item>
+                <a-button type="primary" html-type="submit">查询</a-button>
+              </a-form-item>
+            </a-row>
+          </a-form>
+        </div>
+
         <div class="grid md:grid-cols-2 gap-4">
           <div
             ref="chartRef1"
@@ -63,18 +111,36 @@
         </div>
       </a-card>
     </div>
+
+    <timeModal @register="register" />
   </PageWrapper>
 </template>
 <script lang="ts">
-  import { defineComponent, ref, Ref, onMounted, computed, watch, nextTick } from 'vue';
+  import { defineComponent, ref, Ref, onMounted, computed, watch, nextTick, toRaw } from 'vue';
   import { useRoute } from 'vue-router';
   import { BasicTable, useTable } from '/@/components/Table';
   import { PageWrapper } from '/@/components/Page';
-  import { Divider, Card, Descriptions, Steps, Tabs } from 'ant-design-vue';
+  import dayjs, { Dayjs } from 'dayjs';
+  import {
+    Divider,
+    Card,
+    Descriptions,
+    Steps,
+    Tabs,
+    Form,
+    Select,
+    Button,
+    RangePicker,
+    Row,
+    Col,
+  } from 'ant-design-vue';
   import { targetTableSchema, relationTableSchema, boundaryTableSchema } from './data';
-  import { modelInfoApi } from '/@/api/benchmark/models';
+  import { modelInfoApi, modelDataApi, updateModelInfo } from '/@/api/benchmark/models';
   import { ModelInfo } from '/@/api/benchmark/model/models';
   import { useECharts } from '/@/hooks/web/useECharts';
+  import { useMessage } from '/@/hooks/web/useMessage';
+  import { useModal } from '/@/components/Modal';
+  import timeModal from './timeModal.vue';
 
   export default defineComponent({
     components: {
@@ -88,6 +154,14 @@
       [Steps.Step.name]: Steps.Step,
       [Tabs.name]: Tabs,
       [Tabs.TabPane.name]: Tabs.TabPane,
+      AFormItem: Form.Item,
+      AForm: Form,
+      ASelect: Select,
+      AButton: Button,
+      ARangePicker: RangePicker,
+      ARow: Row,
+      ACol: Col,
+      timeModal,
     },
     setup() {
       const route = useRoute();
@@ -102,6 +176,16 @@
         const info = await fetchModelInfo();
         model.value = info;
       });
+
+      const [register, { openModal }] = useModal();
+
+      type RangeValue = [Dayjs, Dayjs];
+      const value = ref<RangeValue>();
+      const currentDate: Dayjs = dayjs();
+      const lastMonthDate: Dayjs = currentDate.subtract(1, 'month');
+      const rangeValue: RangeValue = [lastMonthDate, currentDate];
+      value.value = rangeValue;
+
       const targetTableData = computed(() => {
         return [model.value?.targetParameter || {}];
       });
@@ -112,6 +196,56 @@
 
       const boundaryTableData = computed(() => {
         return model.value?.boundaryParameter || [];
+      });
+
+      const updateModel = async () => {
+        const modelInfo = toRaw(model.value);
+        console.log(modelInfo);
+        const result = await updateModelInfo(modelInfo);
+        if (result) {
+          createMessage.success('模型更新成功');
+        } else {
+          createMessage.error('模型更新异常,请重试');
+        }
+      };
+
+      const boundarySelectData = computed(() => {
+        let data: any[] = [];
+        const boundary = boundaryTableData.value;
+        for (let i = 0; i < boundary.length; i++) {
+          data.push({
+            id: i,
+            name: `${boundary[i]['description']} (${boundary[i]['targetPoint']})`,
+          });
+        }
+        return data;
+      });
+
+      function handleTargetEdit({ key, value }) {
+        model.value.targetParameter[key] = value;
+        updateModel();
+      }
+
+      function handleBoundaryEdit({ index, key, value }) {
+        model.value.boundaryParameter[index][key] = value;
+        updateModel();
+      }
+
+      function handleRelationEdit({ index, key, value }) {
+        model.value.relationParameter[index][key] = value;
+        updateModel();
+      }
+
+      const typeOptions = [
+        { value: '', label: '所有值' },
+        { value: 'max', label: '最大值' },
+        { value: 'min', label: '最小值' },
+        { value: 'avg', label: '平均值' },
+      ];
+
+      const formData = ref({
+        boundary: [],
+        type: '',
       });
 
       const [relationTable] = useTable({
@@ -146,67 +280,156 @@
       );
       watch(activeKey, (newValue, _) => {
         if (newValue === '2') {
-          console.log(activeKey);
           nextTick(() => {
             resize1();
             resize2();
           });
         }
       });
-
-      onMounted(() => {
-        setOptions1({
+      const fetchModelData = async (dataParams) => {
+        const modelData = await modelDataApi(id, dataParams);
+        return modelData;
+      };
+      const fetchHeatOption = (modelData) => {
+        const option = {
+          title: {
+            text: '热力图名字待定',
+          },
+          tooltip: {
+            position: 'top',
+          },
+          grid: {
+            height: '70%',
+            top: '10%',
+          },
           xAxis: {
             type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            data: Array.from({ length: 10 }, (_, index) => index + 1),
+            splitArea: {
+              show: true,
+            },
+          },
+          yAxis: {
+            type: 'category',
+            data: Array.from({ length: 10 }, (_, index) => index + 1),
+            splitArea: {
+              show: true,
+            },
+          },
+          visualMap: {
+            calculable: true,
+            orient: 'horizontal',
+            left: 'center',
+            bottom: '5%',
+          },
+          series: [
+            {
+              name: '样本个数',
+              type: 'heatmap',
+              data: modelData.heatData,
+              emphasis: {
+                itemStyle: {
+                  shadowBlur: 10,
+                  shadowColor: 'rgba(0, 0, 0, 0.5)',
+                },
+              },
+            },
+          ],
+        };
+        return option;
+      };
+
+      const fetchBarOption = (modelData) => {
+        let option = {
+          title: {
+            text: '柱状图名字待定',
+          },
+          xAxis: {
+            type: 'category',
+            data: Array.from({ length: 10 }, (_, index) => index + 1),
           },
           yAxis: {
             type: 'value',
+            name: '样本数量',
           },
           series: [
             {
-              data: [120, 200, 150, 80, 70, 110, 130],
+              data: modelData['sampleValue'],
               type: 'bar',
             },
           ],
-        });
-      });
-      onMounted(() => {
-        setOptions2({
-          xAxis: {},
-          yAxis: {},
+        };
+        return option;
+      };
+
+      const fetchScatterData = (modelData) => {
+        let scatterData: Array<[number, number]> = [];
+        const targetValue: number[] = modelData.targetValue;
+        const b1: number[] = modelData.dataList[0];
+        for (let i in targetValue) {
+          scatterData.push([targetValue[i], b1[i]]);
+        }
+        const option = {
+          title: {
+            text: '散点图名字待定',
+          },
+          xAxis: {
+            min: (Math.min(...targetValue) * 0.9).toFixed(2),
+            max: (Math.max(...targetValue) * 1.1).toFixed(2),
+          },
+          yAxis: {
+            min: (Math.min(...b1) * 0.9).toFixed(2),
+            max: (Math.max(...b1) * 1.1).toFixed(2),
+          },
           series: [
             {
-              symbolSize: 20,
-              data: [
-                [10.0, 8.04],
-                [8.07, 6.95],
-                [13.0, 7.58],
-                [9.05, 8.81],
-                [11.0, 8.33],
-                [14.0, 7.66],
-                [13.4, 6.81],
-                [10.0, 6.33],
-                [14.0, 8.96],
-                [12.5, 6.82],
-                [9.15, 7.2],
-                [11.5, 7.2],
-                [3.03, 4.23],
-                [12.2, 7.83],
-                [2.02, 4.47],
-                [1.05, 3.33],
-                [4.05, 4.96],
-                [6.03, 7.24],
-                [12.0, 6.26],
-                [12.0, 8.84],
-                [7.08, 5.82],
-                [5.02, 5.68],
-              ],
+              symbolSize: 4,
+              data: scatterData,
               type: 'scatter',
             },
-          ],
+          ] as any,
+        };
+        return option;
+      };
+
+      const submitForm = async (values) => {
+        const selectBoundary = toRaw(values.boundary).join(',');
+        const [startDate, endDate] = value.value;
+        const startDateDate = startDate.toDate();
+        const endDateDate = endDate.toDate();
+        const param = {
+          type: values.type,
+          index: selectBoundary,
+          st: dayjs(startDateDate).format('YYYY-MM-DD HH:mm:ss'),
+          et: dayjs(endDateDate).format('YYYY-MM-DD HH:mm:ss'),
+        };
+        const modelData = await fetchModelData(param);
+        console.log(modelData);
+
+        let options1;
+        if (modelData.dataList.length > 1) {
+          options1 = fetchHeatOption(modelData);
+        } else {
+          options1 = fetchBarOption(modelData);
+        }
+        let options2 = fetchScatterData(modelData);
+        setOptions1(options1, true);
+        setOptions2(options2, true);
+      };
+
+      const onChange = (value) => {
+        if (value.length > 2) {
+          value = value.splice(2);
+        }
+      };
+
+      const labelCol = { style: { width: '80px' } };
+      const { createMessage } = useMessage();
+      const calculateBack = async function () {
+        openModal(true, {
+          id: id,
         });
-      });
+      };
 
       return {
         targetTable,
@@ -216,6 +439,19 @@
         activeKey,
         chartRef1,
         chartRef2,
+        labelCol,
+        formData,
+        submitForm,
+        boundarySelectData,
+        typeOptions,
+        onChange,
+        calculateBack,
+        value,
+        updateModel,
+        handleTargetEdit,
+        handleBoundaryEdit,
+        handleRelationEdit,
+        register,
       };
     },
   });
