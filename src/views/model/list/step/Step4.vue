@@ -20,7 +20,7 @@
           labelField="name"
           valueField="id"
           :params="searchParams"
-          @search="onSearch"
+          @search="(query) => onSearch(query, field)"
         />
       </template>
       <template #add="{ field }">
@@ -61,7 +61,10 @@
     },
     emits: ['next', 'prev'],
     setup(props, { emit }) {
-      const [register, { appendSchemaByField, removeSchemaByField, validate, setProps }] = useForm({
+      const [
+        register,
+        { appendSchemaByField, removeSchemaByField, validate, setProps, setFieldsValue },
+      ] = useForm({
         labelWidth: 100,
         schemas: step4Schemas,
         actionColOptions: {
@@ -164,7 +167,10 @@
         return { keyword: unref(keyword) };
       });
 
-      function onSearch(value: string) {
+      function onSearch(value: string, field: string) {
+        const kv = {};
+        kv[field] = '0';
+        setFieldsValue(kv);
         keyword.value = value;
       }
 

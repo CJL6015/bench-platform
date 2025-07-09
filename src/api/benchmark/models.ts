@@ -7,6 +7,7 @@ enum Api {
   MODEL_SAVE = '/model/',
   MODEL_DATA = '/model/data/',
   CALCULATE_BACK = '/model/data/calculate/',
+  OPTIMISTIC = '/optimistic',
 }
 export const modelCardListApi = (params?: ModelQueryParams) =>
   defHttp.get<ModelCardItem[]>({ url: Api.MODEL_CARD_LIST, params });
@@ -24,3 +25,4 @@ export const modelDataApi = (id: any, params: any) =>
 
 export const calculateBackApi = (id: any, params: any) =>
   defHttp.post<boolean>({ url: Api.CALCULATE_BACK + id, params });
+export const getOptimisticApi = (params: any) => defHttp.get<any>({ url: Api.OPTIMISTIC, params });

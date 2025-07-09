@@ -17,10 +17,10 @@
           v-model:value="model[field]"
           :filterOption="false"
           resultField="list"
-          labelField="name"
+          :labelField="field"
           valueField="id"
           :params="searchParams"
-          @search="onSearch"
+          @search="(query) => onSearch(query, field)"
         />
       </template>
       <template #add="{ field }">
@@ -57,22 +57,23 @@
     },
     emits: ['next', 'prev'],
     setup(props, { emit }) {
-      const [register, { appendSchemaByField, removeSchemaByField, validate, _props }] = useForm({
-        labelWidth: 100,
-        schemas: step3Schemas,
-        actionColOptions: {
-          span: 14,
-        },
-        resetButtonOptions: {
-          text: '上一步',
-        },
-        submitButtonOptions: {
-          text: '下一步',
-        },
-        resetFunc: customResetFunc,
-        submitFunc: customSubmitFunc,
-      });
-      const n = ref(1);
+      const [register, { appendSchemaByField, removeSchemaByField, validate, setFieldsValue }] =
+        useForm({
+          labelWidth: 100,
+          schemas: step3Schemas,
+          actionColOptions: {
+            span: 14,
+          },
+          resetButtonOptions: {
+            text: '上一步',
+          },
+          submitButtonOptions: {
+            text: '下一步',
+          },
+          resetFunc: customResetFunc,
+          submitFunc: customSubmitFunc,
+        });
+      const n = ref(2);
 
       function add() {
         appendSchemaByField(
@@ -142,7 +143,10 @@
         return { keyword: unref(keyword) };
       });
 
-      function onSearch(value: string) {
+      function onSearch(value: string, field: string) {
+        const kv = {};
+        kv[field] = '0';
+        setFieldsValue(kv);
         keyword.value = value;
       }
 

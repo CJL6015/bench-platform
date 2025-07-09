@@ -1,26 +1,33 @@
 <template>
   <div class="grid md:grid-cols-4 gap-4">
-    <template v-for="item in modelCardList" :key="item.title">
-      <Card
-        size="small"
-        :loading="loading"
-        :title="item.title"
-        :hoverable="true"
-        :bodyStyle="item.bodyStyle"
-        :headStyle="item.headStyle"
-        @click="changeModel(item.id)"
-      >
-        <template #extra>
-          <Icon :icon="item.icon" :size="30" color="white" />
-        </template>
-        <div class="p-2 px-5 grid md:grid-cols-3">
-          <span>创建人: {{ item.creator }}</span
-          ><span>创建时间: {{ item.creator }}</span
-          ><span>模型状态: {{ item.status }}</span>
-        </div>
-      </Card>
+    <template v-if="modelCardList.length > 0">
+      <template v-for="item in modelCardList" :key="item.title">
+        <Card
+          size="small"
+          :loading="loading"
+          :title="item.title"
+          :hoverable="true"
+          :bodyStyle="item.bodyStyle"
+          :headStyle="item.headStyle"
+          @click="changeModel(item.id)"
+        >
+          <template #extra>
+            <Icon :icon="item.icon" :size="30" color="white" />
+          </template>
+          <div class="p-2 px-5 grid md:grid-cols-3">
+            <span>创建人: {{ item.creator }}</span
+            ><span>创建时间: {{ item.creatTime }}</span
+            ><span>模型状态: {{ item.status }}</span>
+          </div>
+        </Card>
+      </template>
     </template>
-    <Card size="small" class="icon-card" @click="openDrawer(true)" :hoverable="true"
+    <Card
+      size="small"
+      class="icon-card"
+      @click="openDrawer(true)"
+      :hoverable="true"
+      v-show="systemId != null"
       ><Icon icon="ic:sharp-add" :size="80" color="#a7a9a7"
     /></Card>
   </div>
@@ -85,6 +92,7 @@
           status: statusStr[modelCard.status],
           creator: modelCard.creatName,
           description: modelCard.name,
+          creatTime: modelCard.creatTime,
           headStyle: {
             backgroundColor: colors[modelCard.status],
             fontSize: '20px',
@@ -96,6 +104,7 @@
         };
         cardList.push(card);
       }
+      console.log(cardList);
       modelCardList.value = cardList;
     },
   );

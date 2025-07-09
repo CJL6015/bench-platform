@@ -13,7 +13,7 @@
   import UnitSelect from './UnitSelect.vue';
   import { Card } from 'ant-design-vue';
 
-  const loading = ref<Boolean>(true);
+  const loading = ref<Boolean>(false);
   const selectData = ref(null);
   const systemId = ref(null);
 
@@ -21,10 +21,6 @@
     selectData.value = values;
     systemId.value = values['system'];
   };
-
-  setTimeout(() => {
-    loading.value = false;
-  }, 1500);
 
   export default defineComponent({
     components: {

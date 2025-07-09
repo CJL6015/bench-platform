@@ -13,6 +13,25 @@ export const targetTableSchema: BasicColumn[] = [
     dataIndex: 'targetPoint',
   },
   {
+    title: '寻优判断逻辑',
+    width: 150,
+    dataIndex: 'marktype',
+    edit: true,
+    editComponent: 'Select',
+    editComponentProps: {
+      options: [
+        {
+          label: '越大越好',
+          value: 'max',
+        },
+        {
+          label: '越小越好',
+          value: 'min',
+        },
+      ],
+    },
+  },
+  {
     title: '单位',
     width: 150,
     dataIndex: 'unit',
@@ -31,9 +50,9 @@ export const targetTableSchema: BasicColumn[] = [
     edit: true,
   },
   {
-    title: '时实值',
+    title: '实时值',
     width: 150,
-    dataIndex: 'realTimeValue',
+    dataIndex: 'value',
   },
 ];
 
@@ -73,6 +92,11 @@ export const boundaryTableSchema: BasicColumn[] = [
     dataIndex: 'gridNumber',
     edit: true,
   },
+  {
+    title: '实时值',
+    width: 150,
+    dataIndex: 'value',
+  },
 ];
 
 export const relationTableSchema: BasicColumn[] = [
@@ -104,5 +128,10 @@ export const relationTableSchema: BasicColumn[] = [
     width: 150,
     dataIndex: 'lowerlimit',
     edit: true,
+  },
+  {
+    title: '实时值',
+    width: 150,
+    dataIndex: 'value',
   },
 ];

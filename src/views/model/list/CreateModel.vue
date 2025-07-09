@@ -92,19 +92,19 @@
       function handleStep2Next(step2Values: any) {
         current.value++;
         step2Data.value = step2Values;
-        console.log(step2Values);
+        console.log(222, step2Values);
         state.initStep3 = true;
       }
       function handleStep3Next(step3Values: any) {
         current.value++;
         step3Data.value = step3Values;
-        console.log(step3Values);
+        console.log(333, step3Values);
         state.initStep4 = true;
       }
       function handleStep4Next(step4Values: any) {
         current.value++;
         step4Data.value = step4Values;
-        console.log(step4Values);
+        console.log(444, step4Values);
         state.initStep5 = true;
       }
 

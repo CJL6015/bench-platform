@@ -26,7 +26,7 @@
           labelField="name"
           valueField="id"
           :params="searchParams"
-          @search="onSearch"
+          @search="debounceOptionsFn"
         /> </template
     ></BasicForm>
   </div>
@@ -56,7 +56,7 @@
     },
     emits: ['next', 'prev'],
     setup(props, { emit }) {
-      const [register, { validate, _setProps }] = useForm({
+      const [register, { validate, setFieldsValue }] = useForm({
         labelWidth: 100,
         schemas: step2Schemas,
         actionColOptions: {
@@ -102,9 +102,10 @@
       });
 
       function onSearch(value: string) {
+        setFieldsValue({ targetPoint: '0' });
         keyword.value = value;
       }
-
+      let debounceOptionsFn = useDebounceFn(onSearch, 300);
       return {
         register,
         pointListApi,
@@ -113,6 +114,7 @@
         handleReset: () => {
           keyword.value = '';
         },
+        debounceOptionsFn,
       };
     },
   });

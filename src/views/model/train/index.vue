@@ -59,11 +59,11 @@
         </template>
         <div>
           <a-form layout="inline" :model="formData" :label-col="labelCol" @finish="submitForm">
-            <div style="margin-bottom: 10px" class="grid md:grid-cols-4 gap-4">
+            <a-row style="margin-bottom: 10px">
               <a-form-item label="边界参数" name="boundary">
                 <a-select
                   placeholder="选择边界参数"
-                  style="width: 400px"
+                  style="width: 300px"
                   v-model:value="formData.boundary"
                   mode="tags"
                   :maxTagCount="2"
@@ -78,7 +78,7 @@
               </a-form-item>
               <a-form-item label="数据类型" name="type">
                 <a-select
-                  style="width: 400px"
+                  style="width: 300px"
                   v-model:value="formData.type"
                   :options="typeOptions"
                 />
@@ -93,7 +93,7 @@
               <a-form-item>
                 <a-button type="primary" html-type="submit">查询</a-button>
               </a-form-item>
-            </div>
+            </a-row>
           </a-form>
         </div>
 
@@ -111,6 +111,8 @@
         </div>
       </a-card>
     </div>
+
+    <timeModal @register="register" />
   </PageWrapper>
 </template>
 <script lang="ts">
@@ -129,17 +131,16 @@
     Select,
     Button,
     RangePicker,
+    Row,
+    Col,
   } from 'ant-design-vue';
   import { targetTableSchema, relationTableSchema, boundaryTableSchema } from './data';
-  import {
-    modelInfoApi,
-    modelDataApi,
-    calculateBackApi,
-    updateModelInfo,
-  } from '/@/api/benchmark/models';
+  import { modelInfoApi, modelDataApi, updateModelInfo } from '/@/api/benchmark/models';
   import { ModelInfo } from '/@/api/benchmark/model/models';
   import { useECharts } from '/@/hooks/web/useECharts';
   import { useMessage } from '/@/hooks/web/useMessage';
+  import { useModal } from '/@/components/Modal';
+  import timeModal from './timeModal.vue';
 
   export default defineComponent({
     components: {
@@ -158,6 +159,9 @@
       ASelect: Select,
       AButton: Button,
       ARangePicker: RangePicker,
+      ARow: Row,
+      ACol: Col,
+      timeModal,
     },
     setup() {
       const route = useRoute();
@@ -172,6 +176,8 @@
         const info = await fetchModelInfo();
         model.value = info;
       });
+
+      const [register, { openModal }] = useModal();
 
       type RangeValue = [Dayjs, Dayjs];
       const value = ref<RangeValue>();
@@ -217,14 +223,17 @@
 
       function handleTargetEdit({ key, value }) {
         model.value.targetParameter[key] = value;
+        updateModel();
       }
 
       function handleBoundaryEdit({ index, key, value }) {
         model.value.boundaryParameter[index][key] = value;
+        updateModel();
       }
 
       function handleRelationEdit({ index, key, value }) {
         model.value.relationParameter[index][key] = value;
+        updateModel();
       }
 
       const typeOptions = [
@@ -278,7 +287,7 @@
         }
       });
       const fetchModelData = async (dataParams) => {
-        const modelData = await modelDataApi(1, dataParams);
+        const modelData = await modelDataApi(id, dataParams);
         return modelData;
       };
       const fetchHeatOption = (modelData) => {
@@ -417,19 +426,9 @@
       const labelCol = { style: { width: '80px' } };
       const { createMessage } = useMessage();
       const calculateBack = async function () {
-        const [startDate, endDate] = value.value;
-        const startDateDate = startDate.toDate();
-        const endDateDate = endDate.toDate();
-        const time = {
-          st: startDateDate,
-          et: endDateDate,
-        };
-        const calculateRes = await calculateBackApi(id, time);
-        if (calculateRes) {
-          createMessage.success('回算提交成功');
-        } else {
-          createMessage.error('回算异常');
-        }
+        openModal(true, {
+          id: id,
+        });
       };
 
       return {
@@ -452,6 +451,7 @@
         handleTargetEdit,
         handleBoundaryEdit,
         handleRelationEdit,
+        register,
       };
     },
   });

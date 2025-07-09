@@ -41,6 +41,14 @@ const model: AppRouteModule = {
         title: t('routes.model.trash'),
       },
     },
+    {
+      path: 'optimistic',
+      name: 'optimistic',
+      component: () => import('/@/views/model/optimistic/index.vue'),
+      meta: {
+        title: '对标寻优',
+      },
+    },
   ],
 };
 
