@@ -20,8 +20,8 @@
   const selectData = ref(null);
   const systemId = ref(null);
   const search = ref(null);
-  const st = ref(null);
-  const et = ref(null);
+  const st = ref('');
+  const et = ref('');
 
   const tableSchema: BasicColumn[] = [
     {

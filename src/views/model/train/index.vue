@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <PageWrapper contentBackground>
     <template #footer>
       <a-tabs v-model:activeKey="activeKey">
@@ -291,51 +291,175 @@
         return modelData;
       };
       const fetchHeatOption = (modelData) => {
+        let minValue = Number.POSITIVE_INFINITY;
+        let maxValue = Number.NEGATIVE_INFINITY;
+        const heatSource = Array.isArray(modelData?.heatData) ? modelData.heatData : [];
+        const formattedHeatData: Array<[number, number, number]> = [];
+
+        for (const item of heatSource) {
+          let x: number | undefined;
+          let y: number | undefined;
+          let value: number | undefined;
+
+          if (Array.isArray(item)) {
+            [x, y, value] = item as [number, number, number];
+          } else if (item && typeof item === 'object') {
+            const {
+              x: objX,
+              y: objY,
+              value: objValue,
+            } = item as {
+              x?: number;
+              y?: number;
+              value?: number | [number, number, number];
+            };
+            if (Array.isArray(objValue)) {
+              [x, y, value] = objValue as [number, number, number];
+            } else {
+              x = objX;
+              y = objY;
+              value = objValue;
+            }
+          }
+
+          if (
+            typeof x === 'number' &&
+            typeof y === 'number' &&
+            typeof value === 'number' &&
+            Number.isFinite(value)
+          ) {
+            formattedHeatData.push([x, y, value]);
+            if (value < minValue) {
+              minValue = value;
+            }
+            if (value > maxValue) {
+              maxValue = value;
+            }
+          }
+        }
+
+        if (minValue === Number.POSITIVE_INFINITY) {
+          minValue = 0;
+          maxValue = 0;
+        }
+        if (minValue === maxValue) {
+          maxValue = minValue + 1;
+        }
+
+        const fallbackCategories = Array.from({ length: 10 }, (_, index) => index + 1);
+        const xCategories = formattedHeatData.length
+          ? Array.from(new Set(formattedHeatData.map(([x]) => x))).sort((a, b) => a - b)
+          : fallbackCategories;
+        const yCategories = formattedHeatData.length
+          ? Array.from(new Set(formattedHeatData.map(([, y]) => y))).sort((a, b) => a - b)
+          : fallbackCategories;
+        const heatmapData = formattedHeatData.length ? formattedHeatData : heatSource;
+
         const option = {
+          // todo 美化热力图
           title: {
-            text: '热力图名字待定',
+            text: '工况样本分布热力图',
+            left: 'center',
+            textStyle: {
+              fontSize: 16,
+              fontWeight: 600,
+            },
           },
           tooltip: {
-            position: 'top',
+            trigger: 'item',
+            formatter: (params: { value: number[] }) => {
+              const [x, y, value] = Array.isArray(params.value) ? params.value : [];
+              return `工况：${x}<br/>区间：${y}<br/>样本：${value ?? '-'}`;
+            },
+            backgroundColor: 'rgba(28, 32, 41, 0.9)',
+            borderWidth: 0,
           },
           grid: {
-            height: '70%',
-            top: '10%',
+            top: 50,
+            left: 70,
+            right: 30,
+            bottom: 70,
+            containLabel: true,
           },
           xAxis: {
             type: 'category',
-            data: Array.from({ length: 10 }, (_, index) => index + 1),
+            name: '工况编号',
+            data: xCategories,
+            axisLabel: {
+              color: '#4c4c4c',
+            },
+            axisLine: {
+              lineStyle: {
+                color: '#cfd4dc',
+              },
+            },
             splitArea: {
               show: true,
             },
           },
           yAxis: {
             type: 'category',
-            data: Array.from({ length: 10 }, (_, index) => index + 1),
+            name: '样本区间',
+            data: yCategories,
+            axisLabel: {
+              color: '#4c4c4c',
+            },
+            axisLine: {
+              lineStyle: {
+                color: '#cfd4dc',
+              },
+            },
             splitArea: {
               show: true,
             },
           },
           visualMap: {
+            min: minValue,
+            max: maxValue,
             calculable: true,
             orient: 'horizontal',
             left: 'center',
-            bottom: '5%',
+            bottom: 20,
+            textStyle: {
+              color: '#4c4c4c',
+            },
+            inRange: {
+              color: ['#1A237E', '#2196F3', '#4CAF50', '#FFEB3B', '#F4511E'],
+            },
           },
           series: [
             {
               name: '样本个数',
               type: 'heatmap',
-              data: modelData.heatData,
+              data: heatmapData,
+              progressive: 0,
+              itemStyle: {
+                borderColor: 'rgba(255,255,255,0.6)',
+                borderWidth: 1,
+              },
+              label: {
+                show: true,
+                color: '#1a1d24',
+                fontWeight: 500,
+                formatter: (params: { value: number | number[] }) => {
+                  const value = Array.isArray(params.value) ? params.value[2] : params.value;
+                  return value > 0 ? value : '';
+                },
+              },
               emphasis: {
                 itemStyle: {
-                  shadowBlur: 10,
-                  shadowColor: 'rgba(0, 0, 0, 0.5)',
+                  shadowBlur: 12,
+                  shadowColor: 'rgba(0, 0, 0, 0.35)',
+                },
+                label: {
+                  color: '#1a1d24',
+                  fontWeight: 600,
                 },
               },
             },
           ],
         };
+
         return option;
       };
 

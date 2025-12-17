@@ -25,4 +25,5 @@ export const modelDataApi = (id: any, params: any) =>
 
 export const calculateBackApi = (id: any, params: any) =>
   defHttp.post<boolean>({ url: Api.CALCULATE_BACK + id, params });
-export const getOptimisticApi = (params: any) => defHttp.get<any>({ url: Api.OPTIMISTIC, params });
+export const getOptimisticApi = (params: any) =>
+  defHttp.get<any>({ url: Api.OPTIMISTIC, params, timeout: 10000 });
